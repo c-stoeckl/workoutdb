@@ -1,17 +1,9 @@
 import { SiteHeader } from "@/components/site-header"
 import { Button } from "@/components/ui/button"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-
-const workoutTypes = [
-  "Strength",
-  "Cardio",
-  "Yoga",
-  "Pilates",
-  "HIIT",
-  "Stretch",
-  "Barre",
-  "Dance",
-]
+import { WorkoutList } from "@/components/workout-list"
+import { workoutTypes } from "@/types/workout"
+import { workouts } from "@/data/workouts"
 
 export default function Home() {
   return (
@@ -27,6 +19,7 @@ export default function Home() {
         </div>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
+      <WorkoutList workouts={workouts} />
     </div>
   )
 }
