@@ -17,4 +17,5 @@ export interface Workout {
   duration: number
   type: WorkoutType
   description?: string
+  routine: string
 }

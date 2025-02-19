@@ -5,14 +5,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Workout } from "@/types/workout"
 import React from "react"
-
-export interface Workout {
-  id: number
-  name: string
-  duration: number // duration in minutes
-  description?: string
-}
 
 interface WorkoutListProps {
   workouts: Workout[]
@@ -25,10 +19,10 @@ export function WorkoutList({ workouts }: WorkoutListProps) {
         <Card key={workout.id}>
           <CardHeader>
             <CardTitle>{workout.name}</CardTitle>
-            <CardDescription>{workout.duration} minutes</CardDescription>
+            <CardDescription>{workout.description}</CardDescription>
           </CardHeader>
           <CardContent className="overflow-scroll">
-            <pre>{workout.description}</pre>
+            <pre>{workout.routine}</pre>
           </CardContent>
         </Card>
       ))}
