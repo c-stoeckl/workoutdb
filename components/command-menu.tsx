@@ -92,7 +92,7 @@ export function CommandMenu({ ...props }: DialogProps) {
                 key={type}
                 value={type}
                 onSelect={() => {
-                  runCommand(() => router.push(`/workouts/${type}`))
+                  runCommand(() => router.push(`/workouts?type=${type}`))
                 }}
               >
                 <Dumbbell />
