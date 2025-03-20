@@ -12,7 +12,7 @@ export function MainNav() {
   return (
     <div className="mr-4 hidden md:flex">
       <Link href="/" className="mr-4 flex items-center gap-2 lg:mr-6">
-        <div className="h-6 w-6">💪</div>
+        <div className="size-6">💪</div>
         <span className="hidden font-bold lg:inline-block">
           {siteConfig.name}
         </span>

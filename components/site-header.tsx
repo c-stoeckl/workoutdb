@@ -20,9 +20,9 @@ export function SiteHeader() {
           <CommandMenu />
         </div>
         <nav className="flex items-center gap-0.5">
-          <Button asChild variant="ghost" size="icon" className="h-8 w-8 px-0">
+          <Button asChild variant="ghost" size="icon" className="size-8 px-0">
             <Link href={siteConfig.links.x} target="_blank" rel="noreferrer">
-              <Icons.x className="h-4 w-4" />
+              <Icons.x className="size-4" />
               <span className="sr-only">X</span>
             </Link>
           </Button>
