@@ -21,8 +21,8 @@ export function WorkoutList({ workouts }: WorkoutListProps) {
             <CardTitle>{workout.name}</CardTitle>
             <CardDescription>{workout.description}</CardDescription>
           </CardHeader>
-          <CardContent className="overflow-scroll">
-            <pre>{workout.routine}</pre>
+          <CardContent className="overflow-auto">
+            <pre className="max-h-48 overflow-y-auto">{workout.routine}</pre>
           </CardContent>
         </Card>
       ))}
