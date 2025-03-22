@@ -18,4 +18,5 @@ export interface Workout {
   type: WorkoutType
   description?: string
   routine: string
+  likesCount: number
 }

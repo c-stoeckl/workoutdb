@@ -11,6 +11,7 @@ export const workouts: Workout[] = [
 5x5 Bench Press
 5x5 Deadlift
 5x5 Overhead Press`,
+    likesCount: 12,
   },
   {
     id: 2,
@@ -26,6 +27,7 @@ export const workouts: Workout[] = [
 20s Cobra Pose
 20s Boat Pose
 20s Upward Dog`,
+    likesCount: 8,
   },
   {
     id: 3,
@@ -45,5 +47,6 @@ export const workouts: Workout[] = [
 100 meter Farmer's Carry (2x50/35 lb)
 400 meter Run
 100 Sit-Ups`,
+    likesCount: 15,
   },
 ]
