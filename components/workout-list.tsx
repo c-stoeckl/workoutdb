@@ -66,17 +66,18 @@ export function WorkoutList({ workouts }: WorkoutListProps) {
       {workoutData.map((workout) => (
         <Card key={workout.id} className="relative">
           <div className="absolute top-4 right-4 flex items-center gap-1.5">
-            <span className="text-sm font-medium">{workout.likesCount}</span>
             <Button
               variant="ghost"
               size="icon"
-              className={`h-6 w-6 p-0.5 hover:bg-transparent ${
+              className={`flex p-0.5 z-10 hover:bg-transparent ${
                 favorites.includes(workout.id)
                   ? "fill-red-500 stroke-red-500"
                   : ""
               }`}
               onClick={() => toggleFavorite(workout.id)}
             >
+              <span className="text-sm font-medium">{workout.likesCount}</span>
+
               <Heart
                 strokeWidth={1.5}
                 fill={favorites.includes(workout.id) ? "fill-red-500" : "none"}
