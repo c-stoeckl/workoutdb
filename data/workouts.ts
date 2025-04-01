@@ -49,4 +49,42 @@ export const workouts: Workout[] = [
 100 Sit-Ups`,
     likesCount: 15,
   },
+  {
+    id: 4,
+    name: "4-7-8 breathing",
+    duration: 15,
+    type: "Breathwork",
+    description: "A 15-minute breathwork routine to calm your mind and body.",
+    routine: `1. Exhale all of the air out of your lungs.
+2. Inhale through your nose for a count of 4.
+3. Hold your breath for a count of 7.
+4. Breathe out through your mouth for a count of 8, making a “whoosh” sound with your mouth.
+5. Repeat these steps up to 4 times.`,
+    likesCount: 10,
+  },
+  {
+    id: 5,
+    name: "HYROX",
+    duration: 30,
+    type: "HYROX",
+    description:
+      "HYROX combines both running & functional workout stations, where participants run 1km, followed by 1 functional workout station, repeated eight times.",
+    routine: `1 KM RUN
+1000 m SkiErg
+1 KM RUN
+2×25 m Sled Push (152 kg incl. Sled)
+1 KM RUN
+2×25 m Sled Pull (103 kg incl. Sled)
+1 KM RUN
+80m Burpee Broad Jump
+1 KM RUN
+1000 m Rowing
+1 KM RUN
+200 m Kettle Bells Farmers Carry (2×24 kg)
+1 KM RUN
+100 m Sandbag Lunges (20 kg)
+1 KM RUN
+100 x Wall Balls (6 kg)`,
+    likesCount: 52,
+  },
 ]

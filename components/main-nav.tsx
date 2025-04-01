@@ -5,14 +5,15 @@ import { usePathname } from "next/navigation"
 
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
+import { Icons } from "@/components/icons"
 
 export function MainNav() {
   const pathname = usePathname()
 
   return (
     <div className="mr-4 hidden md:flex">
-      <Link href="/" className="mr-4 flex items-center gap-2 lg:mr-6">
-        <div className="size-6">💪</div>
+      <Link href="/" className="mr-4 flex items-center gap-3 lg:mr-6">
+        <Icons.logo className="size-6" />
         <span className="hidden font-bold lg:inline-block">
           {siteConfig.name}
         </span>

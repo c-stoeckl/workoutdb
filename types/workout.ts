@@ -7,6 +7,8 @@ export const workoutTypes = [
   "Stretch",
   "Barre",
   "Dance",
+  "Breathwork",
+  "HYROX",
 ] as const
 
 export type WorkoutType = (typeof workoutTypes)[number]
