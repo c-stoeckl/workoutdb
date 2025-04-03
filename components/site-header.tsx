@@ -1,10 +1,5 @@
-import Link from "next/link"
-
-import { Button } from "@/components/ui/button"
 import { CommandMenu } from "@/components/command-menu"
-import { siteConfig } from "@/config/site"
 import { ModeSwitcher } from "@/components/mode-switcher"
-import { Icons } from "@/components/icons"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 
 export function SiteHeader() {
@@ -26,12 +21,6 @@ export function SiteHeader() {
           <CommandMenu />
         </div>
         <nav className="flex items-center gap-0.5">
-          <Button asChild variant="ghost" size="icon" className="size-8 px-0">
-            <Link href={siteConfig.links.x} target="_blank" rel="noreferrer">
-              <Icons.x className="size-4" />
-              <span className="sr-only">X</span>
-            </Link>
-          </Button>
           <ModeSwitcher />
         </nav>
       </div>
