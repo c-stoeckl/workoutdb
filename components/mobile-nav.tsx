@@ -33,7 +33,7 @@ export function MobileNav() {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background md:hidden">
       <div className="grid grid-flow-col grid-cols-4">
         {navItems.map((item) => (
           <Link
