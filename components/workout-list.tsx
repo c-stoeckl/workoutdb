@@ -62,7 +62,7 @@ export function WorkoutList({ workouts }: WorkoutListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 p-2 md:p-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
       {workoutData.map((workout) => (
         <Card key={workout.id} className="relative">
           <div className="absolute top-4 right-4 flex items-center gap-1.5">
