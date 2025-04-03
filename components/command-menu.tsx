@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { type DialogProps } from "@radix-ui/react-dialog"
-import { Dumbbell, File, Laptop, Moon, Sun } from "lucide-react"
+import { File, Laptop, Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { navConfig } from "@/config/nav"
@@ -18,7 +18,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command"
-import { workoutTypes } from "@/types/workout"
+import { workoutConfig } from "@/types/workout"
 
 export function CommandMenu({ ...props }: DialogProps) {
   const router = useRouter()
@@ -87,18 +87,20 @@ export function CommandMenu({ ...props }: DialogProps) {
               ))}
           </CommandGroup>
           <CommandGroup heading="Workout Types">
-            {workoutTypes.map((type) => (
-              <CommandItem
-                key={type}
-                value={type}
-                onSelect={() => {
-                  runCommand(() => router.push(`/workouts?type=${type}`))
-                }}
-              >
-                <Dumbbell />
-                {type}
-              </CommandItem>
-            ))}
+            {Object.entries(workoutConfig).map(
+              ([type, { icon: Icon, label }]) => (
+                <CommandItem
+                  key={type}
+                  value={label}
+                  onSelect={() => {
+                    runCommand(() => router.push(`/workouts?type=${type}`))
+                  }}
+                >
+                  <Icon className="mr-2 size-4" />
+                  {label}
+                </CommandItem>
+              )
+            )}
           </CommandGroup>
           <CommandSeparator />
           <CommandGroup heading="Theme">
