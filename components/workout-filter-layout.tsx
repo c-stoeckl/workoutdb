@@ -22,7 +22,7 @@ export function WorkoutFilterLayout({ allWorkouts }: WorkoutFilterLayoutProps) {
 
   return (
     <>
-      <ScrollArea className="w-full whitespace-nowrap mt-14">
+      <ScrollArea className="w-full whitespace-nowrap">
         <div className="flex w-max space-x-2 p-4">
           {workoutTypes.map((type, index) => (
             <Button
