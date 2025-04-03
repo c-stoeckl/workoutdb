@@ -4,7 +4,6 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { WorkoutList } from "@/components/workout-list"
-import { workoutTypes } from "@/types/workout"
 import { Workout } from "@/types/workout"
 
 interface WorkoutFilterLayoutProps {
@@ -16,6 +15,8 @@ export function WorkoutFilterLayout({ allWorkouts }: WorkoutFilterLayoutProps) {
   const router = useRouter()
   const selectedType = searchParams.get("type")
 
+  const availableWorkoutTypes = [...new Set(allWorkouts.map((w) => w.type))]
+
   const filteredWorkouts = selectedType
     ? allWorkouts.filter((w) => w.type === selectedType)
     : allWorkouts
@@ -24,7 +25,7 @@ export function WorkoutFilterLayout({ allWorkouts }: WorkoutFilterLayoutProps) {
     <>
       <ScrollArea className="w-full whitespace-nowrap">
         <div className="flex w-max space-x-2 p-4">
-          {workoutTypes.map((type, index) => (
+          {availableWorkoutTypes.map((type, index) => (
             <Button
               key={index}
               variant={selectedType === type ? "default" : "outline"}
