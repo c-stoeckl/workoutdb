@@ -68,7 +68,7 @@ export const workouts: Workout[] = [
     duration: 30,
     type: "HYROX",
     description:
-      "HYROX combines both running & functional workout stations, where participants run 1km, followed by 1 functional workout station, repeated eight times.",
+      "A unique blend of running and functional workouts, repeated eight times. Estimated time: 90 minutes.",
     routine: `1 KM RUN
 1000 m SkiErg
 1 KM RUN
