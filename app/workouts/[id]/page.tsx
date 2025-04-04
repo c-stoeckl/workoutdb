@@ -7,39 +7,24 @@ import {
 } from "@/components/ui/card"
 import { notFound } from "next/navigation"
 import { workouts } from "@/data/workouts"
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
-// Server Action for fetching workout data
-// async function getWorkout(id: string) {
-//   try {
-//     // Replace with your actual data fetching logic
-//     const res = await fetch(
-//       `${process.env.NEXT_PUBLIC_API_URL}/api/workouts/${id}`,
-//       {
-//         // Next.js 15 cache behavior
-//         next: {
-//           revalidate: 60, // Revalidate every minute
-//           tags: [`workout-${id}`], // Tag for on-demand revalidation
-//         },
-//       }
-//     )
+// Define the props type with Promise for params
+interface WorkoutPageProps {
+  params: Promise<{ id: string }>
+}
 
-//     if (!res.ok) {
-//       return null
-//     }
-
-//     return res.json()
-//   } catch (error) {
-//     console.error("Error fetching workout:", error)
-//     return null
-//   }
-// }
-
-export default async function WorkoutPage({
-  params,
-}: {
-  params: { id: string }
-}) {
-  const workout = workouts.find((w) => w.id === parseInt(params.id))
+export default async function WorkoutPage({ params }: WorkoutPageProps) {
+  // Await the params before using them
+  const { id } = await params
+  const workout = workouts.find((w) => w.id === parseInt(id))
 
   if (!workout) {
     notFound()
@@ -47,7 +32,18 @@ export default async function WorkoutPage({
 
   return (
     <div className="container mx-auto p-4">
-      <Card>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/workouts">Workouts</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{workout.name}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <Card className="mt-4">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">{workout.name}</CardTitle>
           <CardDescription className="text-muted-foreground">
