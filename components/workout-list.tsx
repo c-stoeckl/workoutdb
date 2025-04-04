@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Workout } from "@/types/workout"
 import React, { useEffect, useState } from "react"
 import { Heart } from "lucide-react"
+import Link from "next/link"
 
 interface WorkoutListProps {
   workouts: Workout[]
@@ -62,22 +63,29 @@ export function WorkoutList({ workouts }: WorkoutListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 p-4 md:p-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
       {workoutData.map((workout) => (
-        <Card key={workout.id} className="relative">
-          <div className="absolute top-4 right-4 flex items-center gap-1.5">
+        <Link
+          key={workout.id}
+          href={`/workouts/${workout.id}`}
+          className="flex transition-transform hover:scale-[1.02]"
+        >
+          <Card className="relative w-full">
             <Button
               variant="ghost"
               size="icon"
-              className={`flex p-0.5 z-10 hover:bg-transparent ${
+              className={`absolute top-4 right-4 flex items-center gap-1.5 p-0.5 z-20 hover:bg-transparent ${
                 favorites.includes(workout.id)
                   ? "fill-red-500 stroke-red-500"
                   : ""
               }`}
-              onClick={() => toggleFavorite(workout.id)}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                toggleFavorite(workout.id)
+              }}
             >
               <span className="text-sm font-medium">{workout.likesCount}</span>
-
               <Heart
                 strokeWidth={1.5}
                 fill={favorites.includes(workout.id) ? "fill-red-500" : "none"}
@@ -88,16 +96,16 @@ export function WorkoutList({ workouts }: WorkoutListProps) {
                 }
               />
             </Button>
-          </div>
 
-          <CardHeader>
-            <CardTitle>{workout.name}</CardTitle>
-            <CardDescription>{workout.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <pre className="max-h-48 overflow-y-auto">{workout.routine}</pre>
-          </CardContent>
-        </Card>
+            <CardHeader>
+              <CardTitle>{workout.name}</CardTitle>
+              <CardDescription>{workout.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <pre className="max-h-48 overflow-y-auto">{workout.routine}</pre>
+            </CardContent>
+          </Card>
+        </Link>
       ))}
     </div>
   )
