@@ -25,11 +25,12 @@ export function WorkoutFilterLayout({ allWorkouts }: WorkoutFilterLayoutProps) {
     : allWorkouts
 
   return (
-    <div className="flex flex-col gap-6">
-      <ScrollArea className="w-full whitespace-nowrap rounded-md border">
-        <div className="flex w-max space-x-4 p-4">
+    <div className="flex flex-col">
+      <ScrollArea className="w-full whitespace-nowrap border-y">
+        <div className="flex w-max space-x-2 p-2 px-4">
           <Button
             variant={selectedType ? "outline" : "default"}
+            size="sm"
             onClick={() => {
               const params = new URLSearchParams(searchParams)
               params.delete("type")
@@ -42,6 +43,7 @@ export function WorkoutFilterLayout({ allWorkouts }: WorkoutFilterLayoutProps) {
             <Button
               key={type}
               variant={selectedType === type ? "default" : "outline"}
+              size="sm"
               onClick={() => {
                 const params = new URLSearchParams(searchParams)
                 params.set("type", type)

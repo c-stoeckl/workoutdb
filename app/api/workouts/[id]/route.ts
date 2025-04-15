@@ -4,10 +4,11 @@ import { createClient } from "@/utils/supabase/server"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }>}
 ) {
   try {
-    const workout = await getWorkout(params.id)
+    const { id } = await params
+    const workout = await getWorkout(id)
     return NextResponse.json(workout)
   } catch {
     return NextResponse.json(
@@ -19,7 +20,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -32,7 +33,8 @@ export async function POST(
       )
     }
 
-    const isFavorited = await toggleFavorite(params.id, user.id)
+    const { id } = await params
+    const isFavorited = await toggleFavorite(id, user.id)
     return NextResponse.json({ isFavorited })
   } catch {
     return NextResponse.json(
