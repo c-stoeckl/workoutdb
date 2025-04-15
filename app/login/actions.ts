@@ -21,7 +21,7 @@ export async function signInWithMagicLink(formData: FormData) {
   const { data, error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      // shouldCreateUser: true, // Allow users to sign up via magic link - uncomment if needed
+      shouldCreateUser: true, // Allow users to sign up via magic link - uncomment if needed
       emailRedirectTo,
     },
   })

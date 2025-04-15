@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Card,
   CardContent,
@@ -6,60 +8,68 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Workout } from "@/types/workout"
 import React, { useEffect, useState } from "react"
 import { Heart } from "lucide-react"
 import Link from "next/link"
+import { WorkoutWithDetails } from "@/types/database"
+import { createClient } from "@/utils/supabase/client"
 
 interface WorkoutListProps {
-  workouts: Workout[]
+  workouts: WorkoutWithDetails[]
 }
 
 export function WorkoutList({ workouts }: WorkoutListProps) {
-  // State to track user favorites
-  const [favorites, setFavorites] = useState<number[]>([])
-  const [workoutData, setWorkoutData] = useState<Workout[]>(workouts)
-
-  // Load favorites from localStorage on component mount
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem("workout-favorites")
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites))
-    }
-  }, [])
+  const [workoutData, setWorkoutData] = useState<WorkoutWithDetails[]>(workouts)
+  const supabase = createClient()
 
   // Update workoutData when workouts prop changes
   useEffect(() => {
     setWorkoutData(workouts)
   }, [workouts])
 
-  // Save favorites to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem("workout-favorites", JSON.stringify(favorites))
-  }, [favorites])
-
   // Toggle favorite status for a workout
-  const toggleFavorite = (workoutId: number) => {
-    setWorkoutData((prevWorkouts) =>
-      prevWorkouts.map((workout) =>
-        workout.id === workoutId
-          ? {
-              ...workout,
-              likesCount: favorites.includes(workoutId)
-                ? workout.likesCount - 1
-                : workout.likesCount + 1,
-            }
-          : workout
-      )
-    )
-
-    setFavorites((prevFavorites) => {
-      if (prevFavorites.includes(workoutId)) {
-        return prevFavorites.filter((id) => id !== workoutId)
-      } else {
-        return [...prevFavorites, workoutId]
+  const toggleFavorite = async (workoutId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        // Handle unauthenticated user
+        console.log("Please log in to favorite workouts")
+        return
       }
-    })
+
+      const workout = workoutData.find(w => w.id === workoutId)
+      if (!workout) return
+
+      // Optimistically update UI
+      setWorkoutData((prevWorkouts) =>
+        prevWorkouts.map((w) =>
+          w.id === workoutId
+            ? {
+                ...w,
+                is_favorited: !w.is_favorited,
+                favorites_count: (w.favorites_count ?? 0) + (w.is_favorited ? -1 : 1)
+              }
+            : w
+        )
+      )
+
+      if (workout.is_favorited) {
+        // Remove favorite
+        await supabase
+          .from('favorites')
+          .delete()
+          .match({ workout_id: workoutId, user_id: user.id })
+      } else {
+        // Add favorite
+        await supabase
+          .from('favorites')
+          .insert({ workout_id: workoutId, user_id: user.id })
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+      // Revert optimistic update on error
+      setWorkoutData(workouts)
+    }
   }
 
   return (
@@ -75,34 +85,34 @@ export function WorkoutList({ workouts }: WorkoutListProps) {
               variant="ghost"
               size="icon"
               className={`absolute top-4 right-4 flex items-center gap-1.5 p-0.5 z-20 hover:bg-transparent ${
-                favorites.includes(workout.id)
-                  ? "fill-red-500 stroke-red-500"
-                  : ""
+                workout.is_favorited ? "text-red-500" : ""
               }`}
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                toggleFavorite(workout.id)
+                void toggleFavorite(workout.id)
               }}
             >
-              <span className="text-sm font-medium">{workout.likesCount}</span>
+              <span className="text-sm font-medium">
+                {workout.favorites_count ?? 0}
+              </span>
               <Heart
                 strokeWidth={1.5}
-                fill={favorites.includes(workout.id) ? "fill-red-500" : "none"}
-                stroke={
-                  favorites.includes(workout.id)
-                    ? "stroke-red-500"
-                    : "currentColor"
-                }
+                className={workout.is_favorited ? "fill-current" : "fill-none"}
               />
             </Button>
 
             <CardHeader>
               <CardTitle>{workout.name}</CardTitle>
-              <CardDescription>{workout.description}</CardDescription>
+              <CardDescription>
+                {workout.type.name} • {workout.exercises.length} exercises
+              </CardDescription>
             </CardHeader>
+
             <CardContent>
-              <pre className="max-h-48 overflow-y-auto">{workout.routine}</pre>
+              <p className="line-clamp-3 text-sm text-muted-foreground">
+                {workout.description}
+              </p>
             </CardContent>
           </Card>
         </Link>

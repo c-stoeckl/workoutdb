@@ -4,46 +4,57 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { WorkoutList } from "@/components/workout-list"
-import { Workout } from "@/types/workout"
+import type { WorkoutWithDetails } from "@/types/database"
+import { workoutConfig, type WorkoutCategory } from "@/types/workout"
 
 interface WorkoutFilterLayoutProps {
-  allWorkouts: Workout[]
+  allWorkouts: WorkoutWithDetails[]
 }
 
 export function WorkoutFilterLayout({ allWorkouts }: WorkoutFilterLayoutProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const selectedType = searchParams.get("type")
+  const selectedType = searchParams.get("type") as WorkoutCategory | null
 
-  const availableWorkoutTypes = [...new Set(allWorkouts.map((w) => w.type))]
+  const availableWorkoutTypes = [
+    ...new Set(allWorkouts.map((w) => w.type.name)),
+  ].filter((type): type is WorkoutCategory => type in workoutConfig)
 
   const filteredWorkouts = selectedType
-    ? allWorkouts.filter((w) => w.type === selectedType)
+    ? allWorkouts.filter((w) => w.type.name === selectedType)
     : allWorkouts
 
   return (
-    <>
-      <ScrollArea className="w-full whitespace-nowrap">
-        <div className="flex w-max space-x-2 p-4">
-          {availableWorkoutTypes.map((type, index) => (
+    <div className="flex flex-col gap-6">
+      <ScrollArea className="w-full whitespace-nowrap rounded-md border">
+        <div className="flex w-max space-x-4 p-4">
+          <Button
+            variant={selectedType ? "outline" : "default"}
+            onClick={() => {
+              const params = new URLSearchParams(searchParams)
+              params.delete("type")
+              router.push(`?${params.toString()}`)
+            }}
+          >
+            All
+          </Button>
+          {availableWorkoutTypes.map((type) => (
             <Button
-              key={index}
+              key={type}
               variant={selectedType === type ? "default" : "outline"}
               onClick={() => {
-                if (selectedType === type) {
-                  router.push("?")
-                } else {
-                  router.push(`?type=${type}`)
-                }
+                const params = new URLSearchParams(searchParams)
+                params.set("type", type)
+                router.push(`?${params.toString()}`)
               }}
             >
-              {type}
+              {workoutConfig[type].label}
             </Button>
           ))}
         </div>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
       <WorkoutList workouts={filteredWorkouts} />
-    </>
+    </div>
   )
 }

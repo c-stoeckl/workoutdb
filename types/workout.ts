@@ -8,6 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
+// UI configuration for workout types
 export const workoutConfig = {
   Strength: {
     icon: Dumbbell,
@@ -21,43 +22,34 @@ export const workoutConfig = {
     icon: Leaf,
     label: "Yoga",
   },
-  Pilates: {
-    icon: StretchHorizontal,
-    label: "Pilates",
-  },
   HIIT: {
     icon: Zap,
     label: "HIIT",
   },
-  Stretch: {
+  Flexibility: {
     icon: StretchHorizontal,
-    label: "Stretch",
+    label: "Flexibility",
   },
-  Breathwork: {
+  Endurance: {
     icon: Wind,
-    label: "Breathwork",
-  },
-  HYROX: {
-    icon: Zap,
-    label: "HYROX",
+    label: "Endurance",
   },
 } as const
 
-export type WorkoutType = keyof typeof workoutConfig
+// Type for workout categories
+export type WorkoutCategory = keyof typeof workoutConfig
 
-export const workoutTypes = Object.keys(workoutConfig) as WorkoutType[]
+// Map workout types to their icons
+export const workoutTypeToIcon: Record<WorkoutCategory, LucideIcon> = Object.fromEntries(
+  Object.entries(workoutConfig).map(([key, { icon }]) => [key, icon])
+) as Record<WorkoutCategory, LucideIcon>
 
-export const workoutTypeToIcon: Record<WorkoutType, LucideIcon> =
-  Object.fromEntries(
-    Object.entries(workoutConfig).map(([key, value]) => [key, value.icon])
-  ) as Record<WorkoutType, LucideIcon>
+// Helper function to get workout type label
+export const getWorkoutTypeLabel = (type: WorkoutCategory): string => {
+  return workoutConfig[type].label
+}
 
-export interface Workout {
-  id: number
-  name: string
-  duration: number
-  type: WorkoutType
-  description?: string
-  routine: string
-  likesCount: number
+// Helper function to get workout type icon
+export const getWorkoutTypeIcon = (type: WorkoutCategory): LucideIcon => {
+  return workoutTypeToIcon[type]
 }
