@@ -8,6 +8,7 @@ import { WorkoutList } from "@/components/workout-list"
 import type { WorkoutWithDetails } from "@/types/database"
 import { workoutConfig, type WorkoutCategory } from "@/types/workout"
 import { fetchWorkouts } from "@/hooks/use-workouts"
+import { useFavoriteWorkoutIds } from "@/hooks/use-favorites"
 import { Skeleton } from "@/components/ui/skeleton"
 
 interface WorkoutFilterLayoutProps {
@@ -26,10 +27,28 @@ export function WorkoutFilterLayout({ queryKey }: WorkoutFilterLayoutProps) {
     queryFn: fetchWorkouts,
   })
 
-  const allWorkouts = workoutsData
+  const { data: favoriteIds, isLoading: isFavoritesLoading } =
+    useFavoriteWorkoutIds()
+
+  // Merge favorite status into workouts client-side
+  const allWorkouts: WorkoutWithDetails[] = (workoutsData ?? []).map(
+    (w: WorkoutWithDetails) => ({
+      ...w,
+      is_favorited: favoriteIds?.includes(w.id) ?? false,
+    })
+  )
+
+  // --- Data Processing ---
+  const availableWorkoutTypes: WorkoutCategory[] = [
+    ...new Set(allWorkouts.map((w) => w.type?.name).filter(Boolean)),
+  ].filter((type): type is WorkoutCategory => type in workoutConfig)
+
+  const filteredWorkouts: WorkoutWithDetails[] = selectedType
+    ? allWorkouts.filter((w) => w.type?.name === selectedType)
+    : allWorkouts
 
   // --- Loading State ---
-  if (isLoading && !allWorkouts) {
+  if (isLoading || isFavoritesLoading) {
     return (
       <div className="flex flex-col space-y-4 p-6">
         <Skeleton className="h-10 w-full" />
@@ -51,16 +70,6 @@ export function WorkoutFilterLayout({ queryKey }: WorkoutFilterLayoutProps) {
     )
   }
 
-  // --- Data Processing ---
-  const availableWorkoutTypes = [
-    ...new Set((allWorkouts ?? []).map((w) => w.type.name)),
-  ].filter((type): type is WorkoutCategory => type in workoutConfig)
-
-  const filteredWorkouts = selectedType
-    ? (allWorkouts ?? []).filter((w) => w.type.name === selectedType)
-    : allWorkouts ?? []
-
-  // --- Render Layout ---
   return (
     <div className="flex flex-col">
       {/* Filter Buttons */}
