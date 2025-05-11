@@ -1,20 +1,27 @@
 import { Suspense } from "react"
-import { WorkoutFilterLayout } from "@/components/workout-filter-layout"; 
-import { getWorkouts } from "@/services/workouts";
-import { createClient } from "@/utils/supabase/server";
+import { WorkoutFilterLayout } from "@/components/workout-filter-layout"
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query"
+import getQueryClient from "@/lib/get-query-client"
+import { fetchWorkouts, workoutsQueryKey } from "@/hooks/use-workouts"
 
 export default async function WorkoutsPage() {
-  const supabase = await createClient(); 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userId = user?.id;
+  const queryClient = getQueryClient()
 
-  const workouts = await getWorkouts(supabase, userId);
+  await queryClient.prefetchQuery({
+    queryKey: workoutsQueryKey,
+    queryFn: fetchWorkouts,
+  })
+
+  const dehydratedState = dehydrate(queryClient)
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <WorkoutFilterLayout allWorkouts={workouts} />
-    </Suspense>
+    <HydrationBoundary state={dehydratedState}>
+      <Suspense fallback={<div>Loading workouts...</div>}>
+        {/* Pass only the query key, queryFn is not needed for hydration */}
+        <WorkoutFilterLayout
+          queryKey={workoutsQueryKey}
+        />
+      </Suspense>
+    </HydrationBoundary>
   )
 }

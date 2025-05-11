@@ -1,8 +1,8 @@
 import Link from "next/link"
-import React, { useState, useTransition } from "react"
+import React from "react"
 import { Heart } from "lucide-react"
 import { WorkoutWithDetails } from "@/types/database"
-import { toggleFavoriteAction } from "@/app/actions/workout-actions"
+import { useToggleFavorite } from "@/hooks/use-toggle-favorite"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -12,51 +12,21 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-type OptimisticFavoriteUpdateFn = (action: {
-  workoutId: string
-  isCurrentlyFavorited: boolean
-}) => void
-
 interface WorkoutCardProps {
   workout: WorkoutWithDetails
-  addOptimisticFavoriteUpdate: OptimisticFavoriteUpdateFn
 }
 
 /**
- * Renders a single workout card with details and a favorite button,
- * handling its own favorite toggle state and logic.
+ * Renders a single workout card with details and a favorite button.
+ * Uses useToggleFavorite hook for mutation and optimistic updates.
  */
-export function WorkoutCard({
-  workout,
-  addOptimisticFavoriteUpdate,
-}: WorkoutCardProps) {
-  const [isPending, startTransition] = useTransition()
-  const [localIsFavorited, setLocalIsFavorited] = useState(
-    workout.is_favorited ?? false
-  )
-  const [localFavoritesCount, setLocalFavoritesCount] = useState(
-    workout.favorites_count ?? 0
-  )
+export function WorkoutCard({ workout }: WorkoutCardProps) {
+  const { mutate: toggleFavorite, isPending } = useToggleFavorite()
 
   const handleFavoriteToggle = () => {
-    startTransition(() => {
-      const currentlyFavorited = localIsFavorited
-      const newFavoritedState = !currentlyFavorited
-      const newCount = localFavoritesCount + (newFavoritedState ? 1 : -1)
-
-      setLocalIsFavorited(newFavoritedState)
-      setLocalFavoritesCount(newCount)
-
-      addOptimisticFavoriteUpdate({
-        workoutId: workout.id,
-        isCurrentlyFavorited: currentlyFavorited,
-      })
-
-      toggleFavoriteAction(workout.id).catch((err) => {
-        console.error("Error toggling favorite:", err)
-        setLocalIsFavorited(currentlyFavorited)
-        setLocalFavoritesCount(localFavoritesCount)
-      })
+    toggleFavorite({
+      workoutId: workout.id,
+      isCurrentlyFavorited: workout.is_favorited ?? false,
     })
   }
 
@@ -70,7 +40,7 @@ export function WorkoutCard({
           variant="ghost"
           size="icon"
           className={`absolute top-4 right-4 flex items-center gap-1.5 p-0.5 z-20 hover:bg-transparent ${
-            localIsFavorited ? "text-red-500" : ""
+            workout.is_favorited ? "text-red-500" : ""
           }`}
           onClick={(e) => {
             e.preventDefault()
@@ -79,11 +49,13 @@ export function WorkoutCard({
           }}
           disabled={isPending}
         >
-          <span className="text-sm font-medium">{localFavoritesCount}</span>
+          <span className="text-sm font-medium">
+            {workout.favorites_count ?? 0}
+          </span>
           <Heart
             strokeWidth={1.5}
             className={
-              localIsFavorited ? "fill-current text-red-500" : "fill-none"
+              workout.is_favorited ? "fill-current text-red-500" : "fill-none"
             }
           />
         </Button>
@@ -91,7 +63,8 @@ export function WorkoutCard({
         <CardHeader>
           <CardTitle>{workout.name}</CardTitle>
           <CardDescription>
-            {workout.type.name} • {workout.exercises.length} exercises
+            {workout.type?.name ?? "Unknown Type"} • {workout.exercises.length}{" "}
+            exercises
           </CardDescription>
         </CardHeader>
 

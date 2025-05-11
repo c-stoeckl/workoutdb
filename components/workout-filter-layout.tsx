@@ -1,90 +1,104 @@
 "use client"
 
-import { useOptimistic } from "react"
-import { useSearchParams, usePathname } from "next/navigation"
+import { useState } from "react"
+import { useQuery, type QueryKey } from "@tanstack/react-query"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { WorkoutList } from "@/components/workout-list"
 import type { WorkoutWithDetails } from "@/types/database"
 import { workoutConfig, type WorkoutCategory } from "@/types/workout"
-import Link from "next/link"
+import { fetchWorkouts } from "@/hooks/use-workouts"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface WorkoutFilterLayoutProps {
-  allWorkouts: WorkoutWithDetails[]
+  queryKey: QueryKey
 }
 
-// Type for the optimistic action payload
-type OptimisticFavoriteAction = {
-  workoutId: string
-  isCurrentlyFavorited: boolean // Pass the state *before* the toggle
-}
+export function WorkoutFilterLayout({ queryKey }: WorkoutFilterLayoutProps) {
+  const [selectedType, setSelectedType] = useState<WorkoutCategory | null>(null)
 
-export function WorkoutFilterLayout({ allWorkouts }: WorkoutFilterLayoutProps) {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const selectedType = searchParams.get("type") as WorkoutCategory | null
+  const {
+    data: workoutsData,
+    isLoading,
+    error,
+  } = useQuery<WorkoutWithDetails[]>({
+    queryKey: queryKey,
+    queryFn: fetchWorkouts,
+  })
 
-  // Use useOptimistic hook to manage workout state optimistically
-  const [optimisticWorkouts, addOptimisticFavoriteUpdate] = useOptimistic<
-    WorkoutWithDetails[],
-    OptimisticFavoriteAction
-  >(
-    allWorkouts, // Initial state from props
-    // Update function: takes current state and action, returns new optimistic state
-    (currentState, { workoutId, isCurrentlyFavorited }) => {
-      return currentState.map((workout) =>
-        workout.id === workoutId
-          ? {
-              ...workout,
-              is_favorited: !isCurrentlyFavorited, // Optimistically toggle status
-              favorites_count:
-                (workout.favorites_count ?? 0) +
-                (isCurrentlyFavorited ? -1 : 1), // Optimistically adjust count
-            }
-          : workout
-      )
-    }
-  )
+  const allWorkouts = workoutsData
 
+  // --- Loading State ---
+  if (isLoading && !allWorkouts) {
+    return (
+      <div className="flex flex-col space-y-4 p-6">
+        <Skeleton className="h-10 w-full" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[...Array(8)].map((_, i) => (
+            <Skeleton key={i} className="h-48 w-full" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // --- Error State ---
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center p-6">
+        <p className="text-red-500">Error loading workouts: {error.message}</p>
+      </div>
+    )
+  }
+
+  // --- Data Processing ---
   const availableWorkoutTypes = [
-    ...new Set(optimisticWorkouts.map((w) => w.type.name)),
+    ...new Set((allWorkouts ?? []).map((w) => w.type.name)),
   ].filter((type): type is WorkoutCategory => type in workoutConfig)
 
   const filteredWorkouts = selectedType
-    ? optimisticWorkouts.filter((w) => w.type.name === selectedType)
-    : optimisticWorkouts
+    ? (allWorkouts ?? []).filter((w) => w.type.name === selectedType)
+    : allWorkouts ?? []
 
+  // --- Render Layout ---
   return (
     <div className="flex flex-col">
-      <ScrollArea className="w-full whitespace-nowrap border-y">
+      {/* Filter Buttons */}
+      <ScrollArea className="w-full whitespace-nowrap border-y mb-6">
         <div className="flex w-max space-x-2 p-2 px-4">
           <Button
-            variant={selectedType ? "outline" : "default"}
+            variant={selectedType === null ? "default" : "outline"}
             size="sm"
-            asChild
+            onClick={() => setSelectedType(null)}
           >
-            <Link href={{ pathname }}>All</Link>
+            All
           </Button>
           {availableWorkoutTypes.map((type) => (
             <Button
               key={type}
               variant={selectedType === type ? "default" : "outline"}
               size="sm"
-              asChild
+              onClick={() => setSelectedType(type)}
             >
-              <Link href={{ pathname, search: `?type=${type}` }}>
-                {workoutConfig[type].label}
-              </Link>
+              {workoutConfig[type]?.label || type}
             </Button>
           ))}
         </div>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
-      {/* Pass optimistic state and update function to WorkoutList */}
-      <WorkoutList
-        workouts={filteredWorkouts} // Pass optimistic workouts
-        addOptimisticFavoriteUpdate={addOptimisticFavoriteUpdate} // Pass update fn
-      />
+
+      {/* Workout Grid or Message */}
+      {filteredWorkouts.length === 0 ? (
+        <div className="text-center text-gray-500">
+          No workouts found
+          {selectedType
+            ? ` for type: ${workoutConfig[selectedType]?.label || selectedType}`
+            : ""}
+          .
+        </div>
+      ) : (
+        <WorkoutList workouts={filteredWorkouts} />
+      )}
     </div>
   )
 }
