@@ -2,25 +2,22 @@ import { Suspense } from "react"
 import { dehydrate } from "@tanstack/react-query"
 import { HydrationBoundary } from "@tanstack/react-query"
 import getQueryClient from "@/lib/get-query-client"
-import { favoritesQueryKey } from "@/hooks/use-workouts"
-import { getFavoriteWorkoutsAction } from "./actions"
+import { favoritesQueryKey, fetchWorkoutsSSR } from "@/hooks/use-workouts-server"
 import { WorkoutFilterLayout } from "@/components/workout-filter-layout"
 
 export default async function FavoritesPage() {
   const queryClient = getQueryClient()
 
+  // Use SSR-aware fetchWorkouts for prefetching
   await queryClient.prefetchQuery({
     queryKey: favoritesQueryKey,
-    queryFn: getFavoriteWorkoutsAction,
+    queryFn: fetchWorkoutsSSR,
   })
 
   return (
     <Suspense fallback={<div>Loading favorite workouts...</div>}>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        {/* Pass only the query key */}
-        <WorkoutFilterLayout
-          queryKey={favoritesQueryKey}
-        />
+        <WorkoutFilterLayout queryKey={favoritesQueryKey} filterFavoritesOnly />
       </HydrationBoundary>
     </Suspense>
   )

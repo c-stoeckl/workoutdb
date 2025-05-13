@@ -1,21 +1,27 @@
 "use client"
 
 import { useState } from "react"
-import { useQuery, type QueryKey } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { WorkoutList } from "@/components/workout-list"
 import type { WorkoutWithDetails } from "@/types/database"
 import { workoutConfig, type WorkoutCategory } from "@/types/workout"
-import { fetchWorkouts } from "@/hooks/use-workouts"
-import { useFavoriteWorkoutIds } from "@/hooks/use-favorites"
+import { fetchWorkoutsForQuery } from "@/hooks/use-workouts-client"
 import { Skeleton } from "@/components/ui/skeleton"
 
-interface WorkoutFilterLayoutProps {
-  queryKey: QueryKey
-}
-
-export function WorkoutFilterLayout({ queryKey }: WorkoutFilterLayoutProps) {
+/**
+ * Layout for filtering and displaying workouts, with optional favorites filtering.
+ * @param queryKey - React Query key for fetching workouts
+ * @param filterFavoritesOnly - If true, only show favorited workouts
+ */
+export function WorkoutFilterLayout({
+  queryKey,
+  filterFavoritesOnly = false,
+}: {
+  queryKey: unknown[]
+  filterFavoritesOnly?: boolean
+}) {
   const [selectedType, setSelectedType] = useState<WorkoutCategory | null>(null)
 
   const {
@@ -24,31 +30,28 @@ export function WorkoutFilterLayout({ queryKey }: WorkoutFilterLayoutProps) {
     error,
   } = useQuery<WorkoutWithDetails[]>({
     queryKey: queryKey,
-    queryFn: fetchWorkouts,
+    queryFn: fetchWorkoutsForQuery,
   })
 
-  const { data: favoriteIds, isLoading: isFavoritesLoading } =
-    useFavoriteWorkoutIds()
+  // Use workoutsData directly, as it now contains is_favorited and favorites_count
+  const allWorkouts: WorkoutWithDetails[] = workoutsData ?? []
 
-  // Merge favorite status into workouts client-side
-  const allWorkouts: WorkoutWithDetails[] = (workoutsData ?? []).map(
-    (w: WorkoutWithDetails) => ({
-      ...w,
-      is_favorited: favoriteIds?.includes(w.id) ?? false,
-    })
-  )
+  // --- Favorites Filtering ---
+  const filteredByFavorites = filterFavoritesOnly
+    ? allWorkouts.filter((w) => w.is_favorited)
+    : allWorkouts
 
   // --- Data Processing ---
   const availableWorkoutTypes: WorkoutCategory[] = [
-    ...new Set(allWorkouts.map((w) => w.type?.name).filter(Boolean)),
+    ...new Set(filteredByFavorites.map((w) => w.type?.name).filter(Boolean)),
   ].filter((type): type is WorkoutCategory => type in workoutConfig)
 
   const filteredWorkouts: WorkoutWithDetails[] = selectedType
-    ? allWorkouts.filter((w) => w.type?.name === selectedType)
-    : allWorkouts
+    ? filteredByFavorites.filter((w) => w.type?.name === selectedType)
+    : filteredByFavorites
 
   // --- Loading State ---
-  if (isLoading || isFavoritesLoading) {
+  if (isLoading) {
     return (
       <div className="flex flex-col space-y-4 p-6">
         <Skeleton className="h-10 w-full" />

@@ -2,8 +2,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { toggleFavoriteAction } from "@/app/favorites/actions";
-import { workoutsQueryKey } from "./use-workouts";
+import { toggleFavoriteAction } from "@/app/actions/workouts";
+import { favoritesQueryKey, workoutsQueryKey } from "./use-workouts-client";
 import { favoriteWorkoutIdsQueryKey } from "./use-favorites";
 
 import type { WorkoutWithDetails } from "@/types/database";
@@ -15,7 +15,11 @@ interface ToggleFavoriteVariables {
 }
 
 // Type for the result from the server action
-type ToggleFavoriteResult = boolean;
+type ToggleFavoriteResult = {
+  success: boolean;
+  isFavorited: boolean;
+  error?: string;
+};
 
 // Define the type for the context passed between mutation callbacks
 interface MutationContext {
@@ -66,10 +70,13 @@ export function useToggleFavorite() {
         (oldData) =>
           oldData?.map((workout) => {
             if (workout.id === workoutId) {
-              console.log(
-                `[onMutate] Updating workout ${workoutId} to is_favorited: ${optimisticIsFavorited}`,
-              );
-              return { ...workout, is_favorited: optimisticIsFavorited };
+              const newCount = (workout.favorites_count ?? 0) +
+                (optimisticIsFavorited ? 1 : -1);
+              return {
+                ...workout,
+                is_favorited: optimisticIsFavorited,
+                favorites_count: Math.max(0, newCount),
+              };
             }
             return workout;
           }),
@@ -109,7 +116,7 @@ export function useToggleFavorite() {
       );
       queryClient.invalidateQueries({ queryKey: workoutsQueryKey });
       queryClient.invalidateQueries({ queryKey: favoriteWorkoutIdsQueryKey });
-      queryClient.invalidateQueries({ queryKey: ["favoriteWorkouts"] });
+      queryClient.invalidateQueries({ queryKey: favoritesQueryKey });
     },
   });
 }

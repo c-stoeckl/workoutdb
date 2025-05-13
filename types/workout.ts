@@ -1,12 +1,12 @@
 import {
-  Dumbbell,
-  Zap,
-  Wind,
-  StretchHorizontal,
-  Leaf,
   Activity,
+  Dumbbell,
+  Leaf,
   type LucideIcon,
-} from "lucide-react"
+  StretchHorizontal,
+  Wind,
+  Zap,
+} from "lucide-react";
 
 // UI configuration for workout types
 export const workoutConfig = {
@@ -26,6 +26,10 @@ export const workoutConfig = {
     icon: Zap,
     label: "HIIT",
   },
+  Functional: {
+    icon: Zap,
+    label: "Functional",
+  },
   Flexibility: {
     icon: StretchHorizontal,
     label: "Flexibility",
@@ -34,22 +38,27 @@ export const workoutConfig = {
     icon: Wind,
     label: "Endurance",
   },
-} as const
+  Breathwork: {
+    icon: Wind,
+    label: "Breathwork",
+  },
+} as const;
 
 // Type for workout categories
-export type WorkoutCategory = keyof typeof workoutConfig
+export type WorkoutCategory = keyof typeof workoutConfig;
 
 // Map workout types to their icons
-export const workoutTypeToIcon: Record<WorkoutCategory, LucideIcon> = Object.fromEntries(
-  Object.entries(workoutConfig).map(([key, { icon }]) => [key, icon])
-) as Record<WorkoutCategory, LucideIcon>
+export const workoutTypeToIcon: Record<WorkoutCategory, LucideIcon> = Object
+  .fromEntries(
+    Object.entries(workoutConfig).map(([key, { icon }]) => [key, icon]),
+  ) as Record<WorkoutCategory, LucideIcon>;
 
 // Helper function to get workout type label
 export const getWorkoutTypeLabel = (type: WorkoutCategory): string => {
-  return workoutConfig[type].label
-}
+  return workoutConfig[type].label;
+};
 
 // Helper function to get workout type icon
 export const getWorkoutTypeIcon = (type: WorkoutCategory): LucideIcon => {
-  return workoutTypeToIcon[type]
-}
+  return workoutTypeToIcon[type];
+};
