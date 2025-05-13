@@ -1,30 +1,38 @@
 import type { WorkoutWithDetails } from "@/types/database";
 import { SupabaseClient } from "@supabase/supabase-js";
-import { createClient as createBrowserClient } from "@/utils/supabase/client"; // Use client-side Supabase
+import { WORKOUT_SELECT } from "@/queries/workout-select";
+import { mapRawWorkouts, RawWorkout } from "@/hooks/use-workouts-mapping";
+import { createClient as createBrowserClient } from "@/utils/supabase/client";
 
-const WORKOUT_SELECT_QUERY = `
-  *,
-  type:workout_types(id, name, created_at),
-  workout_exercises(
-    id,
-    sets,
-    reps,
-    weight,
-    weight_unit,
-    duration,
-    rest_period,
-    order,
-    notes,
-    exercise_definition:exercise_definitions(
-      id,
-      name,
-      description,
-      video_url,
-      primary_muscle_group
-    )
-  ),
-  favorites:favorites(count)
-`;
+/**
+ * Fetch all workouts with favorite status for the current user.
+ * @param supabase Supabase client instance (client or server)
+ */
+export async function fetchWorkoutsWithFavorites(
+  supabase: SupabaseClient,
+): Promise<WorkoutWithDetails[]> {
+  let userFavorites = new Set<string>();
+  let user: { id: string } | null = null;
+  const { data: userData } = await supabase.auth.getUser();
+  user = userData?.user ?? null;
+  if (user) {
+    const { data: favorites, error: favError } = await supabase
+      .from("favorites")
+      .select("workout_id")
+      .eq("user_id", user.id);
+    if (!favError && favorites) {
+      userFavorites = new Set(
+        favorites.map((f: { workout_id: string }) => f.workout_id),
+      );
+    }
+  }
+  const { data, error } = await supabase
+    .from("workouts")
+    .select(WORKOUT_SELECT)
+    .order("created_at", { ascending: false });
+  if (error || !data) return [];
+  return mapRawWorkouts(data as RawWorkout[], user, userFavorites);
+}
 
 // --- Helper function to fetch a single workout --- //
 async function fetchWorkoutById(
@@ -34,7 +42,7 @@ async function fetchWorkoutById(
 ): Promise<WorkoutWithDetails> {
   const { data: workout, error } = await supabase
     .from("workouts")
-    .select(WORKOUT_SELECT_QUERY)
+    .select(WORKOUT_SELECT)
     .eq("id", id)
     .single();
 
@@ -80,9 +88,20 @@ async function fetchWorkoutById(
   };
 }
 
-// --- Exported function for Single Workout --- //
-export async function getWorkout(id: string): Promise<WorkoutWithDetails> {
+/**
+ * Fetch a single workout by ID, including favorite status for the current user.
+ * Returns null if not found or on error.
+ */
+export async function getWorkout(
+  id: string,
+): Promise<WorkoutWithDetails | null> {
   const supabase = createBrowserClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return fetchWorkoutById(supabase, id, user);
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData?.user ?? null;
+  try {
+    return await fetchWorkoutById(supabase, id, user);
+  } catch (err) {
+    console.error("Error in getWorkout:", err);
+    return null;
+  }
 }

@@ -27,6 +27,10 @@ export default async function WorkoutPage({ params }: WorkoutPageProps) {
   try {
     const workout = await getWorkout(id)
 
+    if (!workout) {
+      notFound()
+    }
+
     return (
       <div className="container mx-auto p-4">
         <Breadcrumb>
@@ -59,8 +63,13 @@ export default async function WorkoutPage({ params }: WorkoutPageProps) {
                   {workout.exercises
                     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
                     .map((exercise) => (
-                      <div key={exercise.id} className="rounded-lg bg-muted p-4">
-                        <h4 className="font-medium">{exercise.exercise_definition?.name}</h4>
+                      <div
+                        key={exercise.id}
+                        className="rounded-lg bg-muted p-4"
+                      >
+                        <h4 className="font-medium">
+                          {exercise.exercise_definition?.name}
+                        </h4>
                         <div className="mt-2 text-sm text-muted-foreground space-y-1">
                           {exercise.sets && <p>Sets: {exercise.sets}</p>}
                           {exercise.reps && <p>Reps: {exercise.reps}</p>}
@@ -69,8 +78,12 @@ export default async function WorkoutPage({ params }: WorkoutPageProps) {
                               Weight: {exercise.weight} {exercise.weight_unit}
                             </p>
                           )}
-                          {exercise.duration && <p>Duration: {exercise.duration}</p>}
-                          {exercise.rest_period && <p>Rest: {exercise.rest_period}</p>}
+                          {exercise.duration && (
+                            <p>Duration: {exercise.duration}</p>
+                          )}
+                          {exercise.rest_period && (
+                            <p>Rest: {exercise.rest_period}</p>
+                          )}
                           {exercise.notes && (
                             <p className="mt-2 italic">{exercise.notes}</p>
                           )}

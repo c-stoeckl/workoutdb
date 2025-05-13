@@ -1,37 +1,26 @@
 "use client"
 
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { WorkoutList } from "@/components/workout-list"
 import type { WorkoutWithDetails } from "@/types/database"
 import { workoutConfig, type WorkoutCategory } from "@/types/workout"
-import { fetchWorkoutsForQuery } from "@/hooks/use-workouts-client"
+import { useWorkouts } from "@/hooks/use-workouts-client"
 import { Skeleton } from "@/components/ui/skeleton"
 
 /**
  * Layout for filtering and displaying workouts, with optional favorites filtering.
- * @param queryKey - React Query key for fetching workouts
  * @param filterFavoritesOnly - If true, only show favorited workouts
  */
 export function WorkoutFilterLayout({
-  queryKey,
   filterFavoritesOnly = false,
 }: {
-  queryKey: unknown[]
   filterFavoritesOnly?: boolean
 }) {
   const [selectedType, setSelectedType] = useState<WorkoutCategory | null>(null)
 
-  const {
-    data: workoutsData,
-    isLoading,
-    error,
-  } = useQuery<WorkoutWithDetails[]>({
-    queryKey: queryKey,
-    queryFn: fetchWorkoutsForQuery,
-  })
+  const { data: workoutsData, isLoading, error } = useWorkouts()
 
   // Use workoutsData directly, as it now contains is_favorited and favorites_count
   const allWorkouts: WorkoutWithDetails[] = workoutsData ?? []
@@ -73,6 +62,21 @@ export function WorkoutFilterLayout({
     )
   }
 
+  // --- Empty State ---
+  if (!isLoading && filteredWorkouts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-6 text-muted-foreground">
+        <span>
+          No workouts found
+          {selectedType
+            ? ` for type: ${workoutConfig[selectedType]?.label || selectedType}`
+            : ""}
+          .
+        </span>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col">
       {/* Filter Buttons */}
@@ -99,18 +103,8 @@ export function WorkoutFilterLayout({
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
 
-      {/* Workout Grid or Message */}
-      {filteredWorkouts.length === 0 ? (
-        <div className="text-center text-gray-500">
-          No workouts found
-          {selectedType
-            ? ` for type: ${workoutConfig[selectedType]?.label || selectedType}`
-            : ""}
-          .
-        </div>
-      ) : (
-        <WorkoutList workouts={filteredWorkouts} />
-      )}
+      {/* Workout Grid */}
+      <WorkoutList workouts={filteredWorkouts} />
     </div>
   )
 }

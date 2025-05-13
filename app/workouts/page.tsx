@@ -17,8 +17,7 @@ export default async function WorkoutsPage() {
   return (
     <HydrationBoundary state={dehydratedState}>
       <Suspense fallback={<div>Loading workouts...</div>}>
-        {/* Pass only the query key, queryFn is not needed for hydration */}
-        <WorkoutFilterLayout queryKey={workoutsQueryKey} />
+        <WorkoutFilterLayout />
       </Suspense>
     </HydrationBoundary>
   )

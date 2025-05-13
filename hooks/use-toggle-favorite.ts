@@ -3,8 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { toggleFavoriteAction } from "@/app/actions/workouts";
-import { favoritesQueryKey, workoutsQueryKey } from "./use-workouts-client";
-import { favoriteWorkoutIdsQueryKey } from "./use-favorites";
+import { workoutsQueryKey } from "./use-workouts-client";
 
 import type { WorkoutWithDetails } from "@/types/database";
 
@@ -24,7 +23,6 @@ type ToggleFavoriteResult = {
 // Define the type for the context passed between mutation callbacks
 interface MutationContext {
   previousWorkouts?: WorkoutWithDetails[];
-  previousFavorites?: string[];
 }
 
 /**
@@ -56,13 +54,9 @@ export function useToggleFavorite() {
       const optimisticIsFavorited = !isCurrentlyFavorited;
 
       await queryClient.cancelQueries({ queryKey: workoutsQueryKey });
-      await queryClient.cancelQueries({ queryKey: favoriteWorkoutIdsQueryKey });
 
       const previousWorkouts = queryClient.getQueryData<WorkoutWithDetails[]>(
         workoutsQueryKey,
-      );
-      const previousFavorites = queryClient.getQueryData<string[]>(
-        favoriteWorkoutIdsQueryKey,
       );
 
       queryClient.setQueryData<WorkoutWithDetails[]>(
@@ -82,29 +76,13 @@ export function useToggleFavorite() {
           }),
       );
 
-      queryClient.setQueryData<string[]>(
-        favoriteWorkoutIdsQueryKey,
-        (oldIds) => {
-          if (!oldIds) return oldIds;
-          return optimisticIsFavorited
-            ? [...oldIds, workoutId]
-            : oldIds.filter((id) => id !== workoutId);
-        },
-      );
-
-      return { previousWorkouts, previousFavorites };
+      return { previousWorkouts };
     },
     onError: (error, _variables, context) => {
       console.error("[onError] Mutation failed:", error);
       toast.error(`Failed to update favorite status: ${error.message}`);
       if (context?.previousWorkouts) {
         queryClient.setQueryData(workoutsQueryKey, context.previousWorkouts);
-      }
-      if (context?.previousFavorites) {
-        queryClient.setQueryData(
-          favoriteWorkoutIdsQueryKey,
-          context.previousFavorites,
-        );
       }
     },
     onSettled: (data, error) => {
@@ -115,8 +93,6 @@ export function useToggleFavorite() {
         error,
       );
       queryClient.invalidateQueries({ queryKey: workoutsQueryKey });
-      queryClient.invalidateQueries({ queryKey: favoriteWorkoutIdsQueryKey });
-      queryClient.invalidateQueries({ queryKey: favoritesQueryKey });
     },
   });
 }
